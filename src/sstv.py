@@ -307,6 +307,8 @@ class SSTVDecoder:
         self.fit_idx = 0
         self.last_sync = 0
         self.slant_ppm = 0.0
+        self.comp = 1.0                 # ruis drukt de gemeten zwaai samen naar 1750 Hz; 1.0 = geen correctie
+        self.sync_f = deque(maxlen=40)  # gemeten frequentie in geaccepteerde syncpulsen
         self.via_vis = False
         self.sync_ok = 0
         self.sync_seen = 0
@@ -653,6 +655,15 @@ class SSTVDecoder:
                 self.fit_pts.append((best[0], pe))
                 self.last_sync = pe
                 self.sync_ok += 1
+                k = int(0.8 * self.spm)
+                if pe - ps > 3 * k:
+                    self.sync_f.append(float(np.median(self.get(ps + k, pe - k))))
+                    if len(self.sync_f) >= 8:
+                        med = float(np.median(self.sync_f))
+                        c = (med - F_CENTER) / (F_SYNC + self.offset - F_CENTER)
+                        # kleine afwijkingen zijn meetruis (VIS-offset, pulsflanken): pas alleen echte
+                        # samendrukking aan, zodat schone signalen onaangeroerd blijven
+                        self.comp = min(max(c, 0.60), 1.0) if c < 0.985 else 1.0
         if not self.slant or len(self.fit_pts) < 6:
             return
         pts = np.array(self.fit_pts[-400:], dtype=np.float64)
@@ -707,12 +718,15 @@ class SSTVDecoder:
         xi = np.arange(len(c))
         ch = {}
         for off, ms, name in m.scans:
-            # pixelvenster: het pixel zelf, minimaal ~1,6 sample breed (anders te veel ruis)
+            # pixelvenster: het pixel zelf, minimaal ~1,6 sample breed (anders te veel ruis),
+            # en begrensd tot het scansegment, zodat randpixels niet in sync of porch meten
             ctr = tg - a + (off + (np.arange(m.width) + 0.5) * ms / m.width) * k
             half = max(0.5 * ms / m.width * k * self.pix_widen, 0.8)
-            e0, e1 = ctr - half, ctr + half
+            lo, hi = tg - a + off * k, tg - a + (off + ms) * k
+            e0 = np.clip(ctr - half, lo, None)
+            e1 = np.maximum(np.clip(ctr + half, None, hi), e0 + 0.6)
             dz = (np.interp(e1, xi, cr) - np.interp(e0, xi, cr)) + 1j * (np.interp(e1, xi, ci) - np.interp(e0, xi, ci))
-            fv = self.p2f(dz)
+            fv = F_CENTER + (self.p2f(dz) - F_CENTER) / self.comp
             ch[name] = np.clip((fv - self.offset - F_BLACK) * 255.0 / F_RANGE, 0, 255)
         if m.color == "rgb":
             rows = [np.clip(np.stack([ch["R"], ch["G"], ch["B"]], -1) + 0.5, 0, 255).astype(np.uint8)]

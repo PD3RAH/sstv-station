@@ -46,7 +46,7 @@ except ImportError:
 
 # ----------------------------------------------------------------- settings / instellingen
 APP_NAME = "SSTV Station"
-APP_VERSION = "1.0.1"
+APP_VERSION = "1.0.2"
 SURVEY_URL = "https://www.pd3rah.nl/sstvstation/enquete.php"
 REPO_URL = "https://github.com/PD3RAH/sstv-station"
 RELEASE_API = "https://api.github.com/repos/PD3RAH/sstv-station/releases/latest"

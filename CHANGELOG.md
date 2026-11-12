@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.2 – 2026-11-12
+- Noisy pictures come out less dark and grey: the decoder measures how far noise compresses the
+  frequency swing (via the sync pulses) and expands the picture back; clean signals are untouched
+- Edge pixels no longer measure into the sync pulse or porch: removes the coloured band
+  (often green) at the left or right edge of noisy pictures
+- Very weak pictures (around 3 dB SNR) that previously did not start are now attempted
+
 ## 1.0.1 – 2026-11-12
 - Auto-ALC (bottom bar, on by default): lowers the TX level automatically while transmitting until the
   ALC meter is back in the green zone; the level found is kept for the next transmission

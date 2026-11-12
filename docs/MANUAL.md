@@ -172,7 +172,7 @@ At the top of **SSTV tools → Decoder** you choose the receive filter:
 | **Normal** (default) | Most HF signals |
 | **Low noise** | Weak signals: less noise, slightly softer picture |
 
-**Denoise** (on by default) removes single noise pixels after reception without blurring edges and text. For small modes (320 wide) this is also done while receiving. The decoder averages the frequency per pixel weighted by signal strength, so noise spikes hardly count, and recognises the VIS code on weak signals too.
+With a noisy signal the decoder measures, via the sync pulses, how far the noise compresses the picture (making it darker and greyer) and expands it back, and edge pixels no longer measure into the sync pulse (no coloured edge band). **Denoise** (on by default) removes single noise pixels after reception without blurring edges and text. For small modes (320 wide) this is also done while receiving. The decoder averages the frequency per pixel weighted by signal strength, so noise spikes hardly count, and recognises the VIS code on weak signals too.
 
 ### Nothing is decoded?
 

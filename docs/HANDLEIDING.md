@@ -172,7 +172,7 @@ Bovenin **SSTV-hulp → Decoder** kies je het ontvangstfilter:
 | **Normaal** (standaard) | Voor de meeste signalen op HF |
 | **Ruisarm** | Zwakke signalen: minder ruis, iets zachter beeld |
 
-**Ruisfilter** (standaard aan) haalt na afloop losse ruispixels weg zonder randen en tekst te vervagen. Bij kleine modi (320 breed) gebeurt dat ook tijdens de ontvangst. De decoder middelt de frequentie per pixel gewogen naar de signaalsterkte, zodat ruispieken nauwelijks meetellen, en herkent de VIS-code ook bij zwakke signalen.
+Bij veel ruis meet de decoder via de syncpulsen hoe ver de ruis het beeld 'samendrukt' (donkerder en grijzer maakt) en rekent dat terug, en randpixels meten niet meer in de syncpuls (geen gekleurde rand). **Ruisfilter** (standaard aan) haalt na afloop losse ruispixels weg zonder randen en tekst te vervagen. Bij kleine modi (320 breed) gebeurt dat ook tijdens de ontvangst. De decoder middelt de frequentie per pixel gewogen naar de signaalsterkte, zodat ruispieken nauwelijks meetellen, en herkent de VIS-code ook bij zwakke signalen.
 
 ### Wordt er niets gedecodeerd?
 
