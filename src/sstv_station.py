@@ -46,7 +46,7 @@ except ImportError:
 
 # ----------------------------------------------------------------- settings / instellingen
 APP_NAME = "SSTV Station"
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.0.1"
 SURVEY_URL = "https://www.pd3rah.nl/sstvstation/enquete.php"
 REPO_URL = "https://github.com/PD3RAH/sstv-station"
 RELEASE_API = "https://api.github.com/repos/PD3RAH/sstv-station/releases/latest"
@@ -72,6 +72,7 @@ DEFAULT_CONFIG = {
     "tx_mode": "M1",
     "rx_mode": "auto",
     "tx_level": 50,
+    "auto_alc": True,
     "tx_image": "",
     "inset": False,
     "slant": True,
@@ -406,10 +407,15 @@ class SSTVSender:
         self.abort.clear()
         self.busy = True
         self.progress = 0.0
-        threading.Thread(target=self._run, args=(mode, img, device, level, preamble), daemon=True).start()
+        self.set_level(level)
+        threading.Thread(target=self._run, args=(mode, img, device, preamble), daemon=True).start()
         return True
 
-    def _run(self, mode, img, device, level, preamble):
+    def set_level(self, level):
+        """TX-niveau (0..0,9), ook tijdens het zenden aan te passen."""
+        self.gain = min(max(level, 0.005), 0.95) / 0.95
+
+    def _run(self, mode, img, device, preamble):
         ptt = False
         try:
             fs = 48000
@@ -419,7 +425,7 @@ class SSTVSender:
                 fs = int(sd.query_devices(device, "output")["default_samplerate"])
             info = sd.query_devices(device, "output")
             nch = 2 if info["max_output_channels"] >= 2 else 1
-            audio = sstv.encode(mode, img, fs, amp=level, preamble=preamble)
+            audio = sstv.encode(mode, img, fs, amp=0.95, preamble=preamble)
             self.total = len(audio) / fs
             civ = self.app.civ
             if civ is None or self.abort.is_set():
@@ -434,7 +440,7 @@ class SSTVSender:
 
             def cb(out, frames, t, status):
                 i = pos[0]
-                chunk = audio[i:i + frames]
+                chunk = audio[i:i + frames] * self.gain
                 n = len(chunk)
                 out[:n, :] = chunk[:, None]
                 out[n:, :] = 0
@@ -1311,7 +1317,8 @@ class App:
             self.cfg.update(port=self.port_var.get(), baud=int(self.baud_var.get()),
                             civ_addr=self.addr_var.get(), audio_device=self.dev_var.get(),
                             audio_out=self.out_var.get(), step=self.STEPS[self.step_idx], lang=self.lang,
-                            tx_level=int(self.lvl_var.get()), inset=bool(self.inset_var.get()),
+                            tx_level=int(self.lvl_var.get()), auto_alc=bool(self.autoalc_var.get()),
+                            inset=bool(self.inset_var.get()),
                             slant=bool(self.slant_var.get()))
             os.makedirs(DATA_DIR, exist_ok=True)
             with open(CONFIG_FILE, "w", encoding="utf-8") as f:
@@ -1333,6 +1340,7 @@ class App:
         self.rf_var = tk.DoubleVar(value=255)
         self.pwr_var = tk.DoubleVar(value=255)
         self.lvl_var = tk.DoubleVar(value=float(self.cfg.get("tx_level", 50)))
+        self.autoalc_var = tk.BooleanVar(value=bool(self.cfg.get("auto_alc", True)))
         self.upd_var = tk.BooleanVar(value=bool(self.cfg.get("check_updates", True)))
         self.scope_gain = tk.DoubleVar(value=float(self.cfg.get("scope_gain", 0.55)))
         self.inset_var = tk.BooleanVar(value=bool(self.cfg.get("inset", False)))
@@ -1711,11 +1719,15 @@ class App:
         entry(r1, self.hisname_var, 10).pack(side="left", padx=(3, 8))
         FlatButton(r1, "LOG QSO  Ctrl+L", command=self.log_qso, padx=10, pady=2,
                    font=(UI, S(9), "bold"), accent=C["green"]).pack(side="left")
+        ab = FlatButton(r1, "Auto-ALC", var=self.autoalc_var, command=self._save_cfg, padx=8, pady=2,
+                        font=(UI, S(9), "bold"))
+        ab.pack(side="right", padx=(4, 0))
         self.lvl_lbl = label(r1, "", fg=C["text"], width=5)
         self.lvl_lbl.pack(side="right")
         Slider(r1, self.lvl_var, 5, 100, width=S(120), height=S(18)).pack(side="right")
         label(r1, t("TX-niveau", "TX level")).pack(side="right", padx=(0, 4))
-        trace(self.lvl_lbl, self.lvl_var, lambda: self.lvl_lbl.config(text=f"{self.lvl_var.get():.0f}%"))
+        trace(self.lvl_lbl, self.lvl_var, lambda: (self.lvl_lbl.config(text=f"{self.lvl_var.get():.0f}%"),
+                                                   self.sender.set_level(self.lvl_var.get() / 100 * 0.9)))
         self.lvl_lbl.config(text=f"{self.lvl_var.get():.0f}%")
         r2 = tk.Frame(b, bg=C["panel"])
         r2.pack(fill="x", pady=6)
@@ -2366,6 +2378,15 @@ class App:
                     self.scope_title.config(text=hint, fg=C["amber"])
             else:
                 self.scope_title.config(text=base, fg=C["dim"])
+        if self.tx and self.sender.busy and self.autoalc_var.get():
+            alc = self.tx_meters.get("ALC")
+            if alc is not None and alc > 80 and now - getattr(self, "_alc_t", 0) > 0.4:
+                self._alc_t = now
+                lvl = self.lvl_var.get()
+                if lvl > 3:
+                    self.lvl_var.set(max(3.0, lvl - max(1.0, lvl * 0.10)))
+                    self._set_status(self.t(f"Auto-ALC: TX-niveau verlaagd naar {self.lvl_var.get():.0f}%",
+                                            f"Auto-ALC: TX level lowered to {self.lvl_var.get():.0f}%"), C["amber"])
         self._audio_check(now)
         if self.audio and self.audio.rec is not None and self.audio.rec_full:
             self.toggle_rec()

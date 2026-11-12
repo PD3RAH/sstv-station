@@ -221,9 +221,14 @@ The preview updates immediately. What you see is exactly what you send.
 
 SSTV is a frequency-modulated signal with constant amplitude. Overdriving does not give more power, only splatter.
 
+With **Auto-ALC** (bottom bar, on by default) the program handles this itself: if ALC goes too high while transmitting, the TX level is lowered step by step until ALC is back in the green zone. The level found is remembered for the next transmission.
+
+Manually (Auto-ALC off, or to choose the starting level):
+
 1. Set **PWR** to the desired power.
-2. Send a picture and watch the **ALC** meter. Set **TX level** (bottom bar) so that ALC barely moves while the power almost reaches the set maximum.
+2. Send a picture and watch the **ALC** meter. Set **TX level** (bottom bar) so that ALC barely moves while the power almost reaches the set maximum. The slider works immediately, also in the middle of a transmission.
 3. If the power stays too low, raise *USB MOD Level* in the radio's menu.
+4. If ALC stays high even at a low TX level, lower *USB MOD Level* in the radio's menu (e.g. to 30 %).
 
 > **Duty cycle.** SSTV transmits at full power all the time (100 % duty cycle), with PD 290 for almost five minutes. For long modes prefer **30–50 W** and make sure the final amplifier is cooled.
 
@@ -277,7 +282,7 @@ Via **⚙ Settings**:
 | Picture is slanted | Leave **Slant** on. A picture without VIS that starts halfway is straightened once enough lines are in |
 | Wrong colours | Tuning offset too large: retune. Or the station sends a different mode than its VIS code says: choose the mode by hand |
 | Transmitting: no power | Is **DATA MOD** set to **USB** in the menu? Is the radio in USB-D/LSB-D? Is the TX audio device the USB Audio CODEC? Raise TX level or USB MOD Level |
-| Transmitting: ALC far up | Lower TX level or USB MOD Level |
+| Transmitting: ALC far up | Turn on **Auto-ALC** (bottom bar), or lower TX level or USB MOD Level |
 | *Transmission failed* | The TX audio device is busy or removed. Select it again. Details are in `error.log` |
 
 Errors are written to `%APPDATA%\SSTVStation\error.log`. Please include that file when you report a problem.

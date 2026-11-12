@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1 – 2026-11-12
+- Auto-ALC (bottom bar, on by default): lowers the TX level automatically while transmitting until the
+  ALC meter is back in the green zone; the level found is kept for the next transmission
+- The TX level slider now works live, also in the middle of a transmission
+
 ## 1.0.0 – 2026-11-10
 - First release, in the same layout as CW Station
 - Receive and transmit 15 SSTV modes: Martin M1/M2, Scottie S1/S2/DX, Robot 36/72,

@@ -221,9 +221,14 @@ Het voorbeeld wordt direct bijgewerkt. Wat je ziet, is precies wat je uitzendt.
 
 SSTV is een frequentiegemoduleerd signaal met constante amplitude. Een te hoge sturing geeft geen hoger vermogen, wel splatter.
 
+Met **Auto-ALC** (onderbalk, standaard aan) regelt het programma dit zelf: slaat de ALC tijdens het zenden te ver uit, dan wordt het TX-niveau in stapjes verlaagd tot de ALC weer in het groene gebied zit. Het gevonden niveau wordt onthouden voor de volgende uitzending.
+
+Handmatig gaat het zo (Auto-ALC uit, of om de beginstand te kiezen):
+
 1. Zet **PWR** op het gewenste vermogen.
-2. Zend een beeld en kijk naar de **ALC**-meter. Stel **TX-niveau** (onderbalk) zo in dat de ALC net niet of nauwelijks uitslaat, terwijl het vermogen vrijwel het ingestelde maximum haalt.
+2. Zend een beeld en kijk naar de **ALC**-meter. Stel **TX-niveau** (onderbalk) zo in dat de ALC net niet of nauwelijks uitslaat, terwijl het vermogen vrijwel het ingestelde maximum haalt. De schuif werkt direct, ook midden in een uitzending.
 3. Komt het vermogen niet hoog genoeg, verhoog dan *USB MOD Level* in het menu van de radio.
+4. Blijft de ALC zelfs op een laag TX-niveau uitslaan, verlaag dan *USB MOD Level* in het menu van de radio (bijv. naar 30 %).
 
 > **Inschakelduur.** SSTV zendt de hele tijd met vol vermogen (100 % inschakelduur), bij PD 290 bijna vijf minuten achter elkaar. Gebruik bij lange modi liever **30–50 W** en zorg voor koeling van de eindtrap.
 
@@ -277,7 +282,7 @@ Via **⚙ Instellingen**:
 | Beeld is scheef | Laat **Slant** aan. Een beeld zonder VIS dat halverwege begint, wordt pas recht als er genoeg regels binnen zijn |
 | Kleuren kloppen niet | Afstemfout te groot: stem bij. Of het tegenstation zendt een andere modus dan de VIS-code zegt: kies de modus met de hand |
 | Zenden: geen vermogen | Staat **DATA MOD** op **USB** in het menu? Staat de radio in USB-D/LSB-D? Is het TX-audioapparaat het USB Audio CODEC? Verhoog TX-niveau of USB MOD Level |
-| Zenden: ALC slaat ver uit | Verlaag TX-niveau of USB MOD Level |
+| Zenden: ALC slaat ver uit | Zet **Auto-ALC** aan (onderbalk), of verlaag TX-niveau of USB MOD Level |
 | *Zenden mislukt* | Het TX-audioapparaat is bezet of verwijderd. Kies het opnieuw. Details staan in `error.log` |
 
 Fouten worden vastgelegd in `%APPDATA%\SSTVStation\error.log`. Stuur dat bestand mee als je een probleem meldt.
