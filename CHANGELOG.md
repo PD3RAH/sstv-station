@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.3 – 2026-11-13
+- SWR meter now works while transmitting: TX meters are polled one at a time (a burst of four could
+  make the radio drop one reply, always the SWR), with SWR polled twice as often
+- Spectrum scope starts by itself: if no scope data arrives within a few seconds after connecting,
+  the scope output is enabled again (no more toggling the SCOPE button)
+- TX power: the PWR slider setting is remembered and restored on the radio when connecting;
+  first start is 50 % instead of whatever the radio was left at
+- Commands at connect time are sent spaced apart so the radio no longer misses some of them
+
 ## 1.0.2 – 2026-11-12
 - Noisy pictures come out less dark and grey: the decoder measures how far noise compresses the
   frequency swing (via the sync pulses) and expands the picture back; clean signals are untouched

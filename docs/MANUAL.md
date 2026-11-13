@@ -238,7 +238,7 @@ Manually (Auto-ALC off, or to choose the starting level):
 
 - **S-meter**: signal strength while receiving.
 - **PO, SWR, ALC, Id**: only while transmitting, with peak hold. The values are approximations based on Icom's CI-V scale, not a measuring instrument. The supply voltage (Vd) is shown below the meters.
-- **PWR** slider: output power of the radio.
+- **PWR** slider: output power of the radio. The program remembers this setting and restores it on the radio when it connects; the first time it is set to 50 %.
 - **ATU** switches the internal tuner on or off; **TUNE** starts tuning (the radio briefly transmits a carrier).
 
 ## 10. Logbook
@@ -275,7 +275,7 @@ Via **⚙ Settings**:
 | Problem | Solution |
 |---|---|
 | No connection with the radio | Check COM port (Device Manager), baud 115200 and CI-V address. Close other programs using the same port |
-| No scope | Set *CI-V USB Port* to **Unlink from [REMOTE]** and turn on the scope at the radio |
+| No scope | Set *CI-V USB Port* to **Unlink from [REMOTE]** and turn on the scope at the radio. If the waterfall stays empty just after connecting, the program re-enables the scope output by itself after a few seconds |
 | Status line: *no sound received* | Click the message and turn on *Let desktop apps access your microphone*. Select the USB Audio CODEC for RX |
 | **TX** shows *Realtek* or another device | Choose **Speakers (USB Audio CODEC)**, otherwise the transmit audio goes to the PC speakers and the radio sends an empty carrier. Do the same for **RX** (Microphone, USB Audio CODEC) |
 | Picture does not start | Is RX mode set to *Auto*? Is the signal strong enough (visible between 1200 and 2300 Hz)? Try a fixed mode |

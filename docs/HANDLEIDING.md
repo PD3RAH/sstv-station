@@ -238,7 +238,7 @@ Handmatig gaat het zo (Auto-ALC uit, of om de beginstand te kiezen):
 
 - **S-meter**: signaalsterkte bij ontvangst.
 - **PO, SWR, ALC, Id**: alleen tijdens zenden, met piekwaarde. De waarden zijn een benadering op basis van de CI-V-schaal van Icom, geen meetinstrument. Onder de meters staat de voedingsspanning (Vd).
-- **PWR**-schuif: zendvermogen van de radio.
+- **PWR**-schuif: zendvermogen van de radio. Het programma onthoudt deze stand en zet hem bij het verbinden weer op de radio; de eerste keer staat hij op 50 %.
 - **ATU** zet de ingebouwde tuner aan of uit; **TUNE** start het afstemmen (de radio zendt dan kort een draaggolf).
 
 ## 10. Logboek
@@ -275,7 +275,7 @@ Via **⚙ Instellingen**:
 | Probleem | Oplossing |
 |---|---|
 | Geen verbinding met de radio | Controleer COM-poort (Apparaatbeheer), baud 115200 en CI-V-adres. Sluit andere programma's die dezelfde poort gebruiken |
-| Geen scope | Zet *CI-V USB Port* op **Unlink from [REMOTE]** en de scope op de radio aan |
+| Geen scope | Zet *CI-V USB Port* op **Unlink from [REMOTE]** en de scope op de radio aan. Blijft de waterval kort na het verbinden leeg, dan zet het programma de scope-uitvoer na een paar seconden zelf opnieuw aan |
 | Statusregel: *geen geluid ontvangen* | Klik op de melding en zet *Desktop-apps toegang geven tot je microfoon* aan. Kies bij RX het USB Audio CODEC |
 | Bij **TX** staat *Realtek* of een ander apparaat | Kies **Luidsprekers (USB Audio CODEC)**, anders gaat het zendgeluid naar de luidsprekers van de pc en zendt de radio een lege draaggolf. Doe hetzelfde bij **RX** (Microfoon, USB Audio CODEC) |
 | Beeld wordt niet gestart | Staat de RX-modus op *Auto*? Is het signaal sterk genoeg (zichtbaar tussen 1200 en 2300 Hz)? Probeer een vaste modus |

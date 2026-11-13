@@ -37,9 +37,9 @@ FAKE = []
 S.serial = SerialStub
 S.CIV = fake_civ
 
-REL = {"tag_name": "v1.0.1", "html_url": "https://github.com/PD3RAH/sstv-station/releases/tag/v1.0.1",
-       "assets": [{"name": "SSTVStation-Setup-1.0.1.exe", "browser_download_url": "https://x/SSTVStation-Setup-1.0.1.exe"},
-                  {"name": "SSTVStation-Update-1.0.1.exe", "browser_download_url": "https://x/SSTVStation-Update-1.0.1.exe"}]}
+REL = {"tag_name": "v9.9.9", "html_url": "https://github.com/PD3RAH/sstv-station/releases/tag/v9.9.9",
+       "assets": [{"name": "SSTVStation-Setup-9.9.9.exe", "browser_download_url": "https://x/SSTVStation-Setup-9.9.9.exe"},
+                  {"name": "SSTVStation-Update-9.9.9.exe", "browser_download_url": "https://x/SSTVStation-Update-9.9.9.exe"}]}
 
 
 def fake_http(url, timeout=8, accept=""):

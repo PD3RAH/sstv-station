@@ -46,7 +46,7 @@ except ImportError:
 
 # ----------------------------------------------------------------- settings / instellingen
 APP_NAME = "SSTV Station"
-APP_VERSION = "1.0.2"
+APP_VERSION = "1.0.3"
 SURVEY_URL = "https://www.pd3rah.nl/sstvstation/enquete.php"
 REPO_URL = "https://github.com/PD3RAH/sstv-station"
 RELEASE_API = "https://api.github.com/repos/PD3RAH/sstv-station/releases/latest"
@@ -73,6 +73,7 @@ DEFAULT_CONFIG = {
     "rx_mode": "auto",
     "tx_level": 50,
     "auto_alc": True,
+    "pwr": 127,
     "tx_image": "",
     "inset": False,
     "slant": True,
@@ -2023,11 +2024,22 @@ class App:
         self._set_status(f"{self.radio_name} via {self.port_var.get()} (CI-V {addr:02X}h)", C["green"])
         c = self.civ
         c.send(0x1C, b"\x00\x00")
-        for cmd, data in ((0x03, b""), (0x04, b""), (0x1A, b"\x06"), (0x1A, b"\x03"), (0x14, b"\x01"),
-                          (0x14, b"\x02"), (0x14, b"\x0A"), (0x16, b"\x22"), (0x16, b"\x40"),
-                          (0x16, b"\x02"), (0x11, b""), (0x1C, b"\x01"), (0x15, b"\x15")):
-            c.send(cmd, data)
-        self.apply_scope()
+        pwr = int(min(max(self.cfg.get("pwr", 127), 0), 255))
+        self.pwr_var.set(pwr)
+        # gespreid versturen: een reeks commando's direct achter elkaar kan de radio deels laten vallen
+        cmds = [(0x03, b""), (0x04, b""), (0x1A, b"\x06"), (0x1A, b"\x03"), (0x14, b"\x01"),
+                (0x14, b"\x02"), (0x14, b"\x0A" + int_to_bcd_be(pwr, 2)), (0x16, b"\x22"),
+                (0x16, b"\x40"), (0x16, b"\x02"), (0x11, b""), (0x1C, b"\x01"), (0x15, b"\x15")]
+
+        def send_next(i=0):
+            if self.civ is not c or i >= len(cmds):
+                return
+            c.send(*cmds[i])
+            if i + 1 < len(cmds):
+                self.root.after(30, lambda: send_next(i + 1))
+            else:
+                self.root.after(60, self.apply_scope)
+        send_next()
         self._update_highlights()
 
     def _disconnect(self):
@@ -2324,6 +2336,7 @@ class App:
                         self.func_btns["pamp"].config(text=("P.AMP", "P.AMP1", "P.AMP2")[min(item[2], 2)])
                     hl = True
                 elif kind == "scope":
+                    self._scope_last = time.time()
                     self._scope_row(item[1])
                 elif kind == "awf":
                     self._audio_row(item[1], item[2])
@@ -2812,14 +2825,22 @@ class App:
                     self.root.after(200, self._poll)
                     return
                 if self.tx:
-                    for sub in (b"\x11", b"\x12", b"\x13", b"\x16"):   # PO, SWR, ALC, Id
-                        self.civ.send(0x15, sub)
+                    # één meter per poll (een burst van vier laat de radio er soms één vallen);
+                    # SWR om de beurt, zodat die vlot bijblijft
+                    seq = (b"\x11", b"\x12", b"\x13", b"\x12", b"\x16", b"\x12")
+                    self.civ.send(0x15, seq[self.poll_n % len(seq)])
                 else:
                     self.civ.send(0x15, b"\x02")
                 if self.poll_n % 10 == 0:
                     self.civ.send(0x15, b"\x15")                         # Vd
                 if self.poll_n % 3 == 0:
                     self.civ.send(0x1C, b"\x00")
+                if self.poll_n % 15 == 0 and self.scope_var.get() and not self.detecting:
+                    # waakhond: geen scope-data (bv. net na het opstarten) -> scope opnieuw aanzetten
+                    if time.time() - max(getattr(self, "_scope_last", 0),
+                                         getattr(self, "_scope_on_t", 0)) > 3.0:
+                        self._scope_on_t = time.time()
+                        self.apply_scope()
                 if self.poll_n % 5 == 0:
                     self.civ.send(0x03)
                     self.civ.send(0x04)
@@ -2990,6 +3011,7 @@ class App:
 
     def _send_pwr(self, final):
         self._send_level(0x0A, self.pwr_var)
+        self.cfg["pwr"] = int(min(max(self.pwr_var.get(), 0), 255))
 
     def atu_tune(self):
         if self.civ and not self.detecting:
